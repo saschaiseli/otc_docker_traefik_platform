@@ -1,0 +1,65 @@
+version: "3"
+
+networks:
+  traefiknet:
+    external: true
+  internal:
+    external: false
+
+services:
+
+  traefik:
+    image: traefik:latest
+    restart: always
+    command: --docker --api --docker.watch =true --debug=true --logLevel=DEBUG
+    container_name: traefik
+    networks:
+      - traefiknet
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - $PWD/acme.json:/acme.json
+      - $PWD/traefik.toml:/traefik.toml
+    labels:
+      - 'traefik.frontend.rule=Host:192.168.1.20'
+      - 'traefik.port=8080'
+      - 'traefik.backend.name=traefik.backend'
+      - 'traefik.frontend.name=traefik.frontend'
+
+
+
+  mariadb_int_otca:
+    image: bitnami/mariadb:latest
+    container_name: mariadb_int_otca
+    hostname: mariadb_int_otca
+    ports:
+      - '3306:3306'
+    volumes:
+      - /docker_data/mariadb_int_otca:/bitnami
+    networks:
+      - traefiknet
+    environment:
+      MARIADB_DATABASE: db
+      MARIADB_USER: user
+      MARIADB_PASSWORD: ${mariadb_int_otca_password}
+      MARIADB_ROOT_PASSWORD: ${mariadb_int_otca_root_password}
+
+  athlete_service:
+    image: iselisa/athleteservice
+    restart: always
+    depends_on:
+      - mariadb_int_otca
+    networks:
+      - traefiknet
+    environment:
+      DB_HOST: mariadb_int_otca
+      DB_PORT: 3306
+      DB_USER: user
+      DB_PASSWORD: ${mariadb_int_otca_password}
+      DB_DATABASE: db
+    labels:
+      - 'traefik.backend=otc_athlete'
+      - 'traefik.port=8080'
+      - 'traefik.frontend.rule=Host:opentrainingcenter.ddns.net;PathPrefixStrip:/otc/'

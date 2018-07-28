@@ -1,0 +1,33 @@
+defaultEntryPoints = ["http", "https"]
+exposedbydefault=true 
+
+
+logLevel = "DEBUG"
+
+[traefikLog]
+  filePath = "/opt/traefik/compose/traefik/traefik.log"
+  format   = "json"
+
+[accessLog]
+  filePath = "/opt/traefik/compose/traefik/access.log"
+  format = "json"
+
+[web]
+address = ":8080"
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+      entryPoint = "https"
+  [entryPoints.https]
+  address = ":443"
+    [entryPoints.https.tls]
+
+[acme]
+email = "sascha.iseli@gmx.ch"
+storage = "acme.json"
+entryPoint = "https"
+onHostRule = true
+onDemand = false 
+
