@@ -5,11 +5,11 @@ exposedbydefault=true
 logLevel = "DEBUG"
 
 [traefikLog]
-  filePath = "/opt/traefik/compose/traefik/traefik.log"
+  filePath = "/opt/traefik/traefik.log"
   format   = "json"
 
 [accessLog]
-  filePath = "/opt/traefik/compose/traefik/access.log"
+  filePath = "/opt/traefik/access.log"
   format = "json"
 
 [web]
